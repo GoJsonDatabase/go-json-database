@@ -368,8 +368,9 @@ func itemDelete(c *gin.Context) {
 func main() {
 	r := gin.Default()
 	// CRUD Record
-	r.POST("/collection/:collection", CreateJSONFile)
+	// list Record with Filter ?
 	r.GET("/collection/:collection/:id", getItem)
+	r.POST("/collection/:collection", CreateJSONFile)
 	r.PATCH("/collection/:collection/:id", UpdateJSONFile)
 	r.DELETE("/collection/:collection/:id", itemDelete)
 
@@ -380,9 +381,17 @@ func main() {
 	r.PATCH("/collections/:collection", UpdateCollectionName)
 	r.DELETE("/collections/:collection", RemoveCollectionFolder)
 
-	// more
+	// SuperUser
 	r.POST("/admin/login", adminHandler)
 	r.POST("/admin/check", adminCheckHandler)
 
-	r.Run(":8080")
+	// Auth Support
+	// File Upload
+	// S3 Support
+	// Mail Support
+
+	err := r.Run(":8080")
+	if err != nil {
+		return
+	}
 }
