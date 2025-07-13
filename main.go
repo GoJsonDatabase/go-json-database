@@ -79,22 +79,22 @@ func main() {
 
 	// CRUD Record
 	// TODO Filters for records ?
-	r.GET("/collection/:collection", handlers.ListRecord)
-	r.GET("/collection/:collection/:id", handlers.GetRecord)
-	r.POST("/collection/:collection", handlers.CreateRecord)
-	r.PATCH("/collection/:collection/:id", handlers.UpdateRecord)
-	r.DELETE("/collection/:collection/:id", handlers.DeleteRecord)
+	r.GET("/api/collection/:collection", handlers.ListRecord)
+	r.GET("/api/collection/:collection/:id", handlers.GetRecord)
+	r.POST("/api/collection/:collection", handlers.CreateRecord)
+	r.PATCH("/api/collection/:collection/:id", handlers.UpdateRecord)
+	r.DELETE("/api/collection/:collection/:id", handlers.DeleteRecord)
 
 	// CRUD Collection
-	r.GET("/collections", handlers.ListCollection)
-	r.GET("/collections/:collection", handlers.GetCollection)
-	r.POST("/collections/", handlers.CreateCollection)
-	r.PATCH("/collections/:collection", handlers.UpdateCollection)
-	r.DELETE("/collections/:collection", handlers.RemoveCollection)
+	r.GET("/api/collections", handlers.ListCollection)
+	r.GET("/api/collections/:collection", handlers.GetCollection)
+	r.POST("/api/collections/", handlers.CreateCollection)
+	r.PATCH("/api/collections/:collection", handlers.UpdateCollection)
+	r.DELETE("/api/collections/:collection", handlers.RemoveCollection)
 
 	// SuperUser
-	r.POST("/admin/login", adminHandler)
-	r.POST("/admin/check", adminCheckHandler)
+	r.POST("/api/admin/login", adminHandler)
+	r.POST("/api/admin/check", adminCheckHandler)
 
 	// Auth Support
 	// File Upload
