@@ -22,8 +22,6 @@ jobs:
           port: 22
           script: |
             cd /var/www/database
-            git pull origin
-            go build -o main .
-            pkill -f ./json-database || true
-            nohup ./json-database > service.log 2>&1 &
-            echo "✅ Deployment complete"
+            git pull
+            go mod tidy
+            reboot
