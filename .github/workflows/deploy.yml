@@ -1,0 +1,29 @@
+name: Deploy via SSH
+
+on:
+  push:
+    branches:
+      - main  # adjust branch if needed
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: SSH into server and deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: root
+          key: ${{ secrets.SSH_KEY }}
+          port: 22
+          script: |
+            cd /var/www/database
+            git pull origin
+            go build -o main .
+            pkill -f ./json-database || true
+            nohup ./json-database > service.log 2>&1 &
+            echo "✅ Deployment complete"
