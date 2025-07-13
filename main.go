@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go-database-json/handlers"
@@ -76,6 +77,7 @@ func adminCheckHandler(c *gin.Context) {
 
 func main() {
 	r := gin.Default()
+	r.Use(cors.Default())
 
 	// CRUD Record
 	// TODO Filters for records ?
