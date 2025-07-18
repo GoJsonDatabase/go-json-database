@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"go-database-json/handlers"
@@ -77,22 +76,28 @@ func adminCheckHandler(c *gin.Context) {
 
 func main() {
 	r := gin.Default()
-	r.Use(cors.Default())
 
 	// CRUD Record
 	// TODO Filters for records ?
-	r.GET("/api/collection/:collection", handlers.ListRecord)
-	r.GET("/api/collection/:collection/:id", handlers.GetRecord)
-	r.POST("/api/collection/:collection", handlers.CreateRecord)
-	r.PATCH("/api/collection/:collection/:id", handlers.UpdateRecord)
-	r.DELETE("/api/collection/:collection/:id", handlers.DeleteRecord)
 
-	// CRUD Collection
-	r.GET("/api/collections", handlers.ListCollection)
-	r.GET("/api/collections/:collection", handlers.GetCollection)
-	r.POST("/api/collections/", handlers.CreateCollection)
-	r.PATCH("/api/collections/:collection", handlers.UpdateCollection)
-	r.DELETE("/api/collections/:collection", handlers.RemoveCollection)
+	collection := r.Group("/api/collection")
+	{
+		collection.GET("/:collection", handlers.ListRecord)
+		collection.GET("/:collection/:id", handlers.GetRecord)
+		collection.POST("/:collection", handlers.CreateRecord)
+		collection.PATCH("/:collection/:id", handlers.UpdateRecord)
+		collection.DELETE("/:collection/:id", handlers.DeleteRecord)
+	}
+
+	collections := r.Group("/api/collections")
+	{
+		// CRUD Collection
+		collections.GET("/", handlers.ListCollection)
+		collections.GET("/:collection", handlers.GetCollection)
+		collections.POST("/", handlers.CreateCollection)
+		collections.PATCH("/:collection", handlers.UpdateCollection)
+		collections.DELETE("/:collection", handlers.RemoveCollection)
+	}
 
 	// SuperUser
 	r.POST("/api/admin/login", adminHandler)
