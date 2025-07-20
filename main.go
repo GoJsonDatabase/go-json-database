@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go-database-json/auth"
 	"go-database-json/collections"
@@ -20,7 +19,7 @@ var tokens = map[string]string{
 
 func main() {
 	r := gin.Default()
-	r.Use(cors.Default())
+	// r.Use(cors.Default())
 	// CRUD Record
 	// TODO Filters for records ?
 
