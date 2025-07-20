@@ -1,68 +1,69 @@
 package collections
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/gosimple/slug"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 )
 
 func UpdateCollection(c *gin.Context) {
-	collectionID := c.Param("collection")
-	var jsonData map[string]interface{}
-
-	if err := c.BindJSON(&jsonData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
+	// get id from /collections/:id
+	id := c.Param("collection")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
 		return
 	}
 
-	name, ok := jsonData["name"].(string)
-	if !ok || name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Name field is required"})
+	// parse JSON body into a map
+	var body map[string]interface{}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("invalid JSON: %v", err)})
 		return
 	}
 
-	s := slug.Make(name)
-
-	if err := renameFolder(collectionID, s); err != nil {
-		fmt.Println("Error:", err)
-		c.Status(404)
+	// ensure database/{id} directory exists
+	dir := filepath.Join("database", id)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not create directory: %v", err)})
 		return
 	}
-	fmt.Println("Folder renamed successfully!")
 
-	c.JSON(http.StatusOK, gin.H{
-		"message":       "Collection name updated successfully",
-		"collection_id": collectionID,
-		"updated_name":  s,
-	})
-}
+	// file path
+	filePath := filepath.Join(dir, "config.json")
 
-func renameFolder(oldPath, newPath string) error {
-	// Check if oldPath exists and is a directory
-	info, err := os.Stat(oldPath)
+	// marshal the original body
+	data, err := json.MarshalIndent(body, "", "  ")
 	if err != nil {
-		if os.IsNotExist(err) {
-			return fmt.Errorf("source folder %q does not exist", oldPath)
-		}
-		return fmt.Errorf("failed to check source folder %q: %w", oldPath, err)
-	}
-	if !info.IsDir() {
-		return fmt.Errorf("source path %q is not a directory", oldPath)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to encode JSON: %v", err)})
+		return
 	}
 
-	// Check if newPath already exists
-	if _, err := os.Stat(newPath); err == nil {
-		return fmt.Errorf("target folder %q already exists", newPath)
-	} else if !os.IsNotExist(err) {
-		return fmt.Errorf("failed to check target folder %q: %w", newPath, err)
+	// append German date just before writing
+	now := time.Now()
+	germanDate := now.Format("02.01.2006 15:04:05")
+	body["created"] = germanDate
+
+	// re-marshal body with germanDate
+	data, err = json.MarshalIndent(body, "", "  ")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to encode JSON with date: %v", err)})
+		return
 	}
 
-	// Perform rename
-	if err := os.Rename(oldPath, newPath); err != nil {
-		return fmt.Errorf("failed to rename folder %q to %q: %w", oldPath, newPath, err)
+	// write JSON to file
+	if err := os.WriteFile(filePath, data, 0644); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("failed to write file: %v", err)})
+		return
 	}
 
-	return nil
+	// success
+	c.JSON(http.StatusOK, gin.H{
+		"message":     "collection updated",
+		"path":        filePath,
+		"german_date": germanDate,
+	})
 }

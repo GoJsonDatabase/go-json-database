@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 	"log"
 	"net/http"
@@ -25,9 +26,10 @@ func CreateCollection(c *gin.Context) {
 		return
 	}
 	s := slug.Make(name)
+	id := uuid.New()
 
 	basePath := "database"
-	collectionPath := filepath.Join(basePath, s)
+	collectionPath := filepath.Join(basePath, id.String())
 	filePath := collectionPath + "/config.json"
 
 	if err := os.MkdirAll(collectionPath, os.ModePerm); err != nil {
@@ -45,6 +47,7 @@ func CreateCollection(c *gin.Context) {
 	// Encode content as pretty JSON
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
+
 	now := time.Now()
 	germanDate := now.Format("02.01.2006 15:04")
 

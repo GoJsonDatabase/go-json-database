@@ -9,7 +9,7 @@ import (
 func RemoveCollection(c *gin.Context) {
 	var jsonData map[string]interface{}
 
-	collectionId := c.Param("collection")
+	collectionName := c.Param("collection")
 
 	// Parse JSON body
 	if err := c.BindJSON(&jsonData); err != nil {
@@ -17,7 +17,7 @@ func RemoveCollection(c *gin.Context) {
 		return
 	}
 
-	folderPath := "database/" + collectionId
+	folderPath := "database/" + collectionName
 
 	// Check if folder exists and is a directory
 	info, err := os.Stat(folderPath)
@@ -42,6 +42,6 @@ func RemoveCollection(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":    "Collection folder deleted successfully",
-		"collection": collectionId,
+		"collection": collectionName,
 	})
 }
