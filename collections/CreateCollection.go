@@ -46,7 +46,7 @@ func CreateCollection(c *gin.Context) {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent("", "  ")
 	now := time.Now()
-	germanDate := now.Format("02.01.2006 13:37")
+	germanDate := now.Format("02.01.2006 15:04")
 
 	content := map[string]interface{}{
 		"name": s,
