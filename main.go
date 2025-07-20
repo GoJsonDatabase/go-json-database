@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"go-database-json/handlers"
-	"golang.org/x/crypto/bcrypt"
-	"net/http"
+	"go-database-json/auth"
+	"go-database-json/collections"
+	"go-database-json/records"
 )
 
 // Extracted users map for authentication and response
@@ -19,91 +17,47 @@ var tokens = map[string]string{
 	"foo": "JDJhJDEwJGt1cUs5eVprMUszdmlZVTlGWXZxSWV3dlUuM0RUcTM1dHlMWFRCNWtIQTZXeG9nRC5IUVdh",
 }
 
-func adminHandler(c *gin.Context) {
-	var req struct {
-		Identity string `json:"identity"`
-		Password string `json:"password"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
-		return
-	}
-
-	pass, ok := users[req.Identity]
-	if !ok || pass != req.Password {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	secretPassword := []byte(uuid.NewString())
-
-	// Hash the password
-	hashed, err := bcrypt.GenerateFromPassword(secretPassword, bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("Hashed password: %s\n", hashed)
-
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-		"token":  hashed,
-		"user":   req.Identity,
-	})
-}
-
-func adminCheckHandler(c *gin.Context) {
-	var req struct {
-		Username string `json:"username"`
-		Token    string `json:"token"`
-	}
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON"})
-		return
-	}
-
-	token, ok := tokens[req.Username]
-	fmt.Println(token)
-	if !ok || token != req.Token {
-		c.JSON(http.StatusForbidden, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"status": "ok",
-		"user":   req.Token,
-	})
-}
-
 func main() {
 	r := gin.Default()
 
 	// CRUD Record
 	// TODO Filters for records ?
 
-	collection := r.Group("/api/collection")
+	collectiongroup := r.Group("/api/collection")
 	{
-		collection.GET("/:collection", handlers.ListRecord)
-		collection.GET("/:collection/:id", handlers.GetRecord)
-		collection.POST("/:collection", handlers.CreateRecord)
-		collection.PATCH("/:collection/:id", handlers.UpdateRecord)
-		collection.DELETE("/:collection/:id", handlers.DeleteRecord)
+		collectiongroup.GET("/:collection", records.ListRecord)
+		collectiongroup.GET("/:collection/:id", records.GetRecord)
+		collectiongroup.POST("/:collection", records.CreateRecord)
+		collectiongroup.PATCH("/:collection/:id", records.UpdateRecord)
+		collectiongroup.DELETE("/:collection/:id", records.DeleteRecord)
 	}
 
-	collections := r.Group("/api/collections")
+	collectionsgroup := r.Group("/api/collections")
 	{
 		// CRUD Collection
-		collections.GET("/", handlers.ListCollection)
-		collections.GET("/:collection", handlers.GetCollection)
-		collections.POST("/", handlers.CreateCollection)
-		collections.PATCH("/:collection", handlers.UpdateCollection)
-		collections.DELETE("/:collection", handlers.RemoveCollection)
+		collectionsgroup.GET("/", collections.ListCollection)
+		collectionsgroup.GET("/:collection", collections.GetCollection)
+		collectionsgroup.POST("/", collections.CreateCollection)
+		collectionsgroup.PATCH("/:collection", collections.UpdateCollection)
+		collectionsgroup.DELETE("/:collection", collections.RemoveCollection)
 	}
 
 	// SuperUser
-	r.POST("/api/admin/login", adminHandler)
-	r.POST("/api/admin/check", adminCheckHandler)
+	superusergroup := r.Group("/api/superuser")
+	{
+		superusergroup.POST("/login", auth.AdminHandler)
+		superusergroup.POST("/register", auth.RegisterHandler)
+		superusergroup.POST("/check", auth.AdminCheckHandler)
+	}
 
-	// Auth Support
+	// Customers
+	customergroup := r.Group("/api/customer")
+	{
+		customergroup.POST("/login", auth.CustomerHandler)
+		customergroup.POST("/register", auth.RegisterHandler)
+		customergroup.POST("/check", auth.CustomerCheckHandler)
+	}
+
 	// File Upload
 	// S3 Support
 	// Mail Support

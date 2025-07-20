@@ -1,18 +1,18 @@
-package handlers
+package records
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 )
 
-func UpdateRecord(c *gin.Context) {
+func CreateRecord(c *gin.Context) {
 	collection := c.Param("collection")
-	id := c.Param("id")
+	id := uuid.NewString()
 
 	// Read JSON data from the request body
 	var data map[string]interface{}
@@ -21,33 +21,25 @@ func UpdateRecord(c *gin.Context) {
 		return
 	}
 
-	// Build file path
-	path := filepath.Join("database", collection, id+".json")
-
-	// Check if the file exists
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		fmt.Println(path)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Item not found"})
+	// Make sure the collection directory exists
+	if err := os.MkdirAll("database/"+collection, os.ModePerm); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not create directory"})
 		return
 	}
 
-	// Marshal the new data to JSON
+	// Marshal the data to JSON
 	jsonBytes, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not marshal JSON"})
 		return
 	}
 
-	// Overwrite the file
+	// Write to file
+	path := filepath.Join("database/"+collection, id+".json")
 	if err := ioutil.WriteFile(path, jsonBytes, 0644); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not write file"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"status":     "updated",
-		"id":         id,
-		"collection": collection,
-		"data":       data,
-	})
+	c.JSON(http.StatusCreated, gin.H{"status": "created", "id": id, "collection": collection})
 }

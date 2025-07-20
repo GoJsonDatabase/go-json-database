@@ -1,4 +1,4 @@
-package handlers
+package records
 
 import (
 	"github.com/gin-gonic/gin"
