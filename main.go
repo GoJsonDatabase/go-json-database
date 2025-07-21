@@ -9,8 +9,6 @@ import (
 
 func main() {
 	r := gin.Default()
-	// r.Use(cors.Default())
-	// CRUD Record
 	// TODO Filters for records ?
 
 	collectiongroup := r.Group("/api/collection")
