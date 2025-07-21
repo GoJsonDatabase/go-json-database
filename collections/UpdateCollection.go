@@ -11,11 +11,25 @@ import (
 )
 
 func UpdateCollection(c *gin.Context) {
-	// get id from /collections/:id
 	id := c.Param("collection")
 	if id == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "missing id"})
 		return
+	}
+
+	dir := "database/" + id
+
+	// check if dir exists
+	info, err := os.Stat(dir)
+	if os.IsNotExist(err) {
+		fmt.Printf("directory %s does not exist\n", dir)
+		os.Exit(1) // or return error if inside a function
+	}
+
+	// check if it's really a directory
+	if !info.IsDir() {
+		fmt.Printf("%s exists but is not a directory\n", dir)
+		os.Exit(1)
 	}
 
 	// parse JSON body into a map
@@ -26,7 +40,7 @@ func UpdateCollection(c *gin.Context) {
 	}
 
 	// ensure database/{id} directory exists
-	dir := filepath.Join("database", id)
+	dir = filepath.Join("database", id)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("could not create directory: %v", err)})
 		return
@@ -62,8 +76,8 @@ func UpdateCollection(c *gin.Context) {
 
 	// success
 	c.JSON(http.StatusOK, gin.H{
-		"message":     "collection updated",
-		"path":        filePath,
-		"german_date": germanDate,
+		"message": "collection updated",
+		"path":    filePath,
+		"date":    germanDate,
 	})
 }

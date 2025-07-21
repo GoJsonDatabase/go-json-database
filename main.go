@@ -7,16 +7,6 @@ import (
 	"go-database-json/records"
 )
 
-// Extracted users map for authentication and response
-var users = map[string]string{
-	"foo": "bar",
-}
-
-// Extracted users map for authentication and response
-var tokens = map[string]string{
-	"foo": "JDJhJDEwJGt1cUs5eVprMUszdmlZVTlGWXZxSWV3dlUuM0RUcTM1dHlMWFRCNWtIQTZXeG9nRC5IUVdh",
-}
-
 func main() {
 	r := gin.Default()
 	// r.Use(cors.Default())
