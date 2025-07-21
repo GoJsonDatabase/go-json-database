@@ -28,13 +28,6 @@ func GetCollection(c *gin.Context) {
 		return
 	}
 
-	// get "config" key
-	config, ok := raw["config"]
-	if !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": `"config" key not found in config.json`})
-		return
-	}
-
 	// count JSON files (excluding config.json)
 	files, err := os.ReadDir(dirPath)
 	if err != nil {
@@ -55,7 +48,7 @@ func GetCollection(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"collection": collection,
-		"config":     config,
+		"config":     raw,
 		"count":      count,
 	})
 }
