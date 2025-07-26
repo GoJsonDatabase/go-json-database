@@ -14,6 +14,7 @@ import (
 )
 
 func CreateCollection(c *gin.Context) {
+
 	var body map[string]interface{}
 	if err := c.BindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
@@ -52,8 +53,8 @@ func CreateCollection(c *gin.Context) {
 	germanDate := now.Format("02.01.2006 15:04")
 
 	content := map[string]interface{}{
-		"name": s,
-		"date": germanDate,
+		"name":    s,
+		"created": germanDate,
 	}
 
 	if err := encoder.Encode(content); err != nil {
