@@ -53,7 +53,7 @@ func CreateCollection(c *gin.Context) {
 	germanDate := now.Format("02.01.2006 15:04")
 
 	content := map[string]interface{}{
-		"name":    s,
+		"name":    name,
 		"created": germanDate,
 	}
 
